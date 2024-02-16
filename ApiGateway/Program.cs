@@ -4,7 +4,9 @@ using Ocelot.Provider.Eureka;
 using Ocelot.Provider.Polly;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Configuration.AddJsonFile("ocelotEurekaService.json", false, true);
+builder.Configuration.AddJsonFile("ocelot.json", false, true);
+//builder.Configuration.AddJsonFile("ocelotComposition.json", false, true);
+//builder.Configuration.AddJsonFile("ocelotEurekaService.json", false, true);
 
 // Add services to the container.
 
@@ -12,7 +14,9 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddOcelot().AddEureka().AddPolly();
+builder.Services.AddOcelot();
+//builder.Services.AddOcelot().AddEureka();
+//builder.Services.AddOcelot().AddEureka().AddPolly();
 
 var app = builder.Build();
 

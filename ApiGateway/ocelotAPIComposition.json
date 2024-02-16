@@ -3,6 +3,7 @@
     {
       "DownstreamPathTemplate": "/api/Product/showproducts",
       "DownstreamScheme": "https",
+      "Key": "products",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
@@ -15,6 +16,7 @@
     {
       "DownstreamPathTemplate": "/api/Order/showOrders",
       "DownstreamScheme": "https",
+      "Key": "orders",
       "DownstreamHostAndPorts": [
         {
           "Host": "localhost",
@@ -44,13 +46,13 @@
       "UpstreamHttpMethod": [ "GET" ]
     }
   ],
+  "Aggregates": [
+    {
+      "RouteKeys": [ "products", "orders" ],
+      "UpstreamPathTemplate": "/combine"
+    }
+  ],
   "GlobalConfiguration": {
-    //Ocelot needs to know the URL it is running
-    //under in order to do Header find & replace 
-    //and for certain administration configurations
-    //If you are running containers Ocelot might run on the URL http://123.12.1.1:6543 
-    //but has something like nginx in front of it responding on https://api.mybusiness.com. 
-    //In this case the Ocelot BaseUrl should be https://api.mybusiness.com.
     "BaseUrl": "https://localhost:7214"
   }
 }

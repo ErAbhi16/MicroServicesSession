@@ -3,13 +3,13 @@
 namespace OrderService.Controllers
 {
     [ApiController]
-    public class ValuesController : Controller
+    [Route("api/[controller]")]
+    public class OrderController : Controller
     {
         private OrderDetails _orderDetails = new OrderDetails();
-        readonly ILogger<ValuesController> _log;
-        //private static int _count = 0;
+        readonly ILogger<OrderController> _log;
 
-        public ValuesController(ILogger<ValuesController> log)
+        public OrderController(ILogger<OrderController> log)
         {
             _log = log;
         }
@@ -22,12 +22,6 @@ namespace OrderService.Controllers
         [HttpGet("showorders")]
         public ActionResult Get()
         {
-            //_count++;
-            //if (_count <= 3)
-            //{
-            //    Thread.Sleep(3000);
-            //}
-
             var count = OrderDatabase.orderdb.Max(c => c.OrderId);
 
             IEnumerable<OrderDetails> CustomerOrders = OrderDatabase.orderdb.Where(c => c.CustomerId == CustomerDetails.CustomerID);
@@ -44,21 +38,6 @@ namespace OrderService.Controllers
 
         }
 
-        [HttpGet("makepayment/{id}")]
-        public ActionResult<string> Get(int id)
-        {
-            OrderDetails order = OrderDatabase.orderdb.FirstOrDefault(c => c.CustomerId == CustomerDetails.CustomerID && c.OrderId == id && c.PaymentStatus == "Pending");
-
-            if (order == null)
-            {
-                return BadRequest(new { message = "Wrong Order ID" });
-            }
-            else
-            {
-                order.PaymentStatus = "PaymentDone";
-                return Ok(order);
-            }
-        }
 
     }
 }

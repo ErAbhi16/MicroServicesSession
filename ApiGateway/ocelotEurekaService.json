@@ -5,25 +5,14 @@
       "DownstreamScheme": "https",
       "ServiceName": "ProductService",
       "UpstreamPathTemplate": "/gateway/showproducts",
-      "UpstreamHttpMethod": [ "GET" ],
-      "RateLimitOptions": {
-        "EnableRateLimiting": true,
-        "Limit": 1,
-        "Period": "1s",
-        "PeriodTimespan": 1
-      }
+      "UpstreamHttpMethod": [ "GET" ]
     },
     {
       "DownstreamPathTemplate": "/showOrders",
       "DownstreamScheme": "https",
       "ServiceName": "OrderService",
       "UpstreamPathTemplate": "/gateway/showOrders",
-      "UpstreamHttpMethod": [ "GET" ],
-      "QoSOptions": {
-        "ExceptionsAllowedBeforeBreaking": 2,
-        "DurationOfBreak": 5000,
-        "TimeoutValue": 1000
-      }
+      "UpstreamHttpMethod": [ "GET" ]
     },
     {
       "DownstreamPathTemplate": "/showcart",
@@ -35,7 +24,7 @@
     }
   ],
   "GlobalConfiguration": {
-    "RequestIdKey": "Ocelot",
+    "BaseUrl": "https://localhost:7214",
     "UseServiceDiscovery": true,
     "ServiceDiscoveryProvider": {
       "Type": "Eureka",

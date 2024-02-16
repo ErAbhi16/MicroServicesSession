@@ -4,17 +4,22 @@ using Microsoft.AspNetCore.Mvc;
 namespace ProductService.Controllers
 {
     [ApiController]
-    public class ValuesController : Controller
+    [Route("api/[controller]")]
+    public class ProductController : Controller
     {
-        readonly ILogger<ValuesController> _log;
+        readonly ILogger<ProductController> _log;
         List<Product> _products = new List<Product>();
-        public ValuesController(ILogger<ValuesController> log)
+        public ProductController(ILogger<ProductController> log)
         {
 
             _products = ProductItems._products;
             _log = log;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
         [HttpGet("showproducts")]
         //[Authorize(Roles = "Deliver")]
         public ActionResult<IEnumerable<string>> Get()
