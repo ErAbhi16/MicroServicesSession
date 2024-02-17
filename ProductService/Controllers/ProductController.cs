@@ -20,7 +20,7 @@ namespace ProductService.Controllers
         /// 
         /// </summary>
         /// <returns></returns>
-        [HttpGet("showproducts")]
+        [HttpGet]
         //[Authorize(Roles = "Deliver")]
         public ActionResult<IEnumerable<string>> Get()
         {
@@ -36,7 +36,7 @@ namespace ProductService.Controllers
             }
         }
 
-        [HttpGet("showproduct/{id}")]
+        [HttpGet("{id}")]
         public ActionResult ProductById(int id)
         {
             var productbyid = _products.FirstOrDefault(c => c.ProductId == id);
@@ -50,7 +50,7 @@ namespace ProductService.Controllers
             }
         }
 
-        [HttpPost("addproduct")]
+        [HttpPost]
         public ActionResult Post([FromBody] Product product)
         {
             var count = _products.Max(c => c.ProductId);
@@ -59,7 +59,7 @@ namespace ProductService.Controllers
             return Ok(_products);
         }
 
-        [HttpDelete("deleteproduct/{id}")]
+        [HttpDelete("{id}")]
         public ActionResult Delete(int id)
         {
             var product = _products.FirstOrDefault(c => c.ProductId == id);
@@ -70,5 +70,7 @@ namespace ProductService.Controllers
             _products.Remove(product);
             return Ok(_products);
         }
+
+
     }
 }

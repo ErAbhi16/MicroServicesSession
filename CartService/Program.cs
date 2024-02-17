@@ -1,9 +1,23 @@
+using Polly.Extensions.Http;
+using Polly;
 using Steeltoe.Discovery.Client;
+using CartService;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// also in Program.cs
+static IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
+{
+    return HttpPolicyExtensions
+        .HandleTransientHttpError()
+        .CircuitBreakerAsync(5, TimeSpan.FromSeconds(30));
+}
+
 // Add services to the container.
 builder.Services.AddDiscoveryClient(builder.Configuration);
+builder.Services.AddHttpClient<ICartBusiness, CartBusiness>()
+       .SetHandlerLifetime(TimeSpan.FromMinutes(5));
+       //.AddPolicyHandler(GetCircuitBreakerPolicy);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -14,8 +28,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    //app.UseSwagger();
+    //app.UseSwaggerUI();
 }
 app.UseHttpsRedirection();
 

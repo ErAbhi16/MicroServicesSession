@@ -1,24 +1,34 @@
 {
   "Routes": [
     {
-      "DownstreamPathTemplate": "/showproducts",
+      "DownstreamPathTemplate": "/api/product",
       "DownstreamScheme": "https",
       "ServiceName": "ProductService",
       "UpstreamPathTemplate": "/gateway/showproducts",
       "UpstreamHttpMethod": [ "GET" ]
     },
     {
-      "DownstreamPathTemplate": "/showOrders",
+      "DownstreamPathTemplate": "/api/order",
       "DownstreamScheme": "https",
       "ServiceName": "OrderService",
       "UpstreamPathTemplate": "/gateway/showOrders",
       "UpstreamHttpMethod": [ "GET" ]
     },
     {
-      "DownstreamPathTemplate": "/showcart",
+      "DownstreamPathTemplate": "/api/cart/showcart",
       "DownstreamScheme": "https",
       "ServiceName": "CartService",
       "UpstreamPathTemplate": "/gateway/showcart",
+      "UpstreamHttpMethod": [ "GET" ],
+      "QoSOptions": {
+        "TimeoutValue": 5000
+      }
+    },
+    {
+      "DownstreamPathTemplate": "/api/order/{cartID}",
+      "DownstreamScheme": "https",
+      "ServiceName": "OrderService",
+      "UpstreamPathTemplate": "/gateway/placeorder/{cartID}",
       "UpstreamHttpMethod": [ "GET" ]
 
     }
