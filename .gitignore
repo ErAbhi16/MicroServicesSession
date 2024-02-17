@@ -6,3 +6,6 @@
 obj 
 bin
 /ApiGateway/obj/*
+/ApiGateway/obj/Debug/net6.0/ApiGateway.csproj.AssemblyReference.cache
+/CartService/obj/Debug/net6.0/CartService.csproj.AssemblyReference.cache
+/ProductService/obj/Debug/net6.0/ProductService.csproj.AssemblyReference.cache
