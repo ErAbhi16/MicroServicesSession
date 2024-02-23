@@ -21,7 +21,7 @@ namespace CartService.Controllers
         [HttpGet("showcart")]
         public ActionResult<string> Get()
         {
-            Task.Delay(6000);
+            Thread.Sleep(2000);
             IEnumerable<CartDetails> productsInCart = CartDatabase.cartdb.Where(c => c.CustomerID == CustomerDetails.CustomerID);
             if (productsInCart.Count() > 0)
             {
