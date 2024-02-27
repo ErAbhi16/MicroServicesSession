@@ -1,0 +1,53 @@
+version: "3.3"
+
+services:
+  productservice:
+    image: productservice:v2
+    networks:
+        - nagpnetwork
+    ports:
+      - "5003:80"
+      
+  cartservice:
+    image: cartservice:v2
+    networks:
+        - nagpnetwork
+    ports:
+      - "5001:80" 
+
+  orderservice:
+    image: orderservice:v3
+    networks:
+        - nagpnetwork
+    environment:
+      - RabbitMQ__HostName=rabbitmq
+      - RabbitMQ__Port=5672
+      - RabbitMQ__UserName=guest
+      - RabbitMQ__Password=guest
+      - RabbitMQ__VirtualHost=/
+    ports:
+      - "5005:80"
+    depends_on:
+      - rabbitmq  
+      
+  rabbitmq:
+    image: rabbitmq:latest
+    ports:
+      - "5672:5672"  
+      - "15672:15672"  
+    networks:
+      - nagpnetwork
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest  # Set default user
+      - RABBITMQ_DEFAULT_PASS=guest  # Set default password      
+
+
+
+networks:
+  nagpnetwork:
+    driver: bridge
+
+# Additional configuration for environment variables, logging, etc. can be added here.
+#docker run -d -p 8761:8761 steeltoeoss/eureka-server
+
+

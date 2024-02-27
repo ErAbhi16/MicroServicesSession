@@ -9,11 +9,13 @@ namespace CartService.Controllers
         private CartDetails cart = new CartDetails();
         private readonly IConfiguration _config;
         readonly ILogger<CartController> _log;
+        readonly ICartBusiness _cartBusiness;
 
-        public CartController(IConfiguration config, ILogger<CartController> log)
+        public CartController(IConfiguration config, ILogger<CartController> log, ICartBusiness cartBusiness)
         {
             _config = config;
             _log = log;
+            _cartBusiness = cartBusiness;
         }
 
         // GET api/values/5
@@ -32,6 +34,22 @@ namespace CartService.Controllers
             {
                 _log.LogInformation("from cart service: Cart is empty");
                 return Ok(new { message = "Your cart is empty.!! Go shopping...!!!" });
+            };
+        }
+
+        [HttpPut]
+        public async Task<ActionResult<string>> PutAsync([FromBody] Product product)
+        {
+            var response = await _cartBusiness.GetProductAsync(product.ProductId);
+            if (response)
+            {
+                _log.LogInformation("From cart service: Update Cart successfully");
+                return Ok(new { message = "Update Cart successfully" });
+            }
+            else
+            {
+                _log.LogInformation("from cart service: Update failed as Product Doesn't exists");
+                return Ok(new { message = "Update failed as Product Doesn't exists !!!" });
             };
         }
 

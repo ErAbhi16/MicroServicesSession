@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Text;
 using RabbitMQ.Client;
 using OrderService.Interface;
+using System.Net.Http;
 
 namespace OrderService.Controllers
 {
@@ -40,9 +41,22 @@ namespace OrderService.Controllers
         }
 
         [HttpGet("{cartID}")]
-        public ActionResult Get([FromRoute]int cartID)
+        public async Task<ActionResult> GetAsync([FromRoute]int cartID)
         {
-            _orderPlaceService.PublishOrder(cartID);
+            _log.LogInformation($"OrderService cart id: {cartID} ");
+            using var httpClient = new HttpClient();
+
+            HttpResponseMessage response = await httpClient.GetAsync("https://localhost:7095/api/product/3");
+
+            if (response.IsSuccessStatusCode)
+            {
+                string responseBody = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"Response body: {responseBody}");
+            }
+            else
+            {
+                Console.WriteLine($"HTTP status code: {response.StatusCode}");
+            }
             return Ok();
 
 

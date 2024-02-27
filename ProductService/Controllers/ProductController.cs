@@ -9,9 +9,11 @@ namespace ProductService.Controllers
     {
         readonly ILogger<ProductController> _log;
         List<Product> _products = new List<Product>();
-        public ProductController(ILogger<ProductController> log)
-        {
+        readonly IProductBusiness _productBusiness;
 
+        public ProductController(ILogger<ProductController> log, IProductBusiness productBusiness)
+        {
+            _productBusiness = productBusiness;
             _products = ProductItems._products;
             _log = log;
         }
@@ -42,12 +44,13 @@ namespace ProductService.Controllers
             var productbyid = _products.FirstOrDefault(c => c.ProductId == id);
             if (productbyid == null)
             {
-                return Ok(new { message = "Product does not exists" });
+                throw new Exception("Service is unavailable");
             }
             else
             {
                 return Ok(productbyid);
             }
+
         }
 
         [HttpPost]

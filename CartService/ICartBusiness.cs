@@ -2,7 +2,7 @@
 {
     public interface ICartBusiness
     {
-        void GetProduct(int id);
+        Task<bool> GetProductAsync(int id);
     }
 
     public class Product
