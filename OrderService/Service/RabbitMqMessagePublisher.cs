@@ -16,6 +16,7 @@ public class RabbitMqMessagePublisher:IRabbitMqMessagePublisher
 
     public void Publish(int orderID)
     {
+        //
         _logger.LogInformation($"Publishing order for {orderID}");
         using var connection = _connectionFactory.CreateConnection();
         using var channel = connection.CreateModel();
