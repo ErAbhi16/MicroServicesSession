@@ -14,7 +14,7 @@ builder.Services.AddSingleton<IProductBusiness, ProductBusiness>();
 var serviceName = "ProductService";
 
 using TracerProvider? tracerProvider = Sdk.CreateTracerProviderBuilder()
-    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName, serviceVersion: "1.0.0"))
+    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName, serviceVersion: "1.0.5"))
     .AddSource(serviceName)
     .AddJaegerExporter(o => o.Protocol = OpenTelemetry.Exporter.JaegerExportProtocol.HttpBinaryThrift)
     .AddAspNetCoreInstrumentation()

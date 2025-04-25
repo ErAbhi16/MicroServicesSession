@@ -4,10 +4,6 @@ using OpenTelemetry.Trace;
 using OrderService.Interface;
 using OrderService.Service;
 using RabbitMQ.Client;
-using Steeltoe.Discovery.Client;
-using Steeltoe.Extensions.Configuration;
-using System.Net.Sockets;
-using System.Runtime.Intrinsics.Arm;
 using IConnectionFactory = RabbitMQ.Client.IConnectionFactory;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,12 +14,12 @@ builder.Services.AddScoped<IOrderPlaceService, OrderPlaceService>();
 var config = configuration.GetSection("RabbitMQ").Get<RabbitMQConfig>();
 var serviceName = "OrderService";
 
-using TracerProvider? tracerProvider = Sdk.CreateTracerProviderBuilder()
-    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName, serviceVersion: "1.0.0"))
-    .AddSource(serviceName)
+using TracerProvider? tracerProvider = Sdk.CreateTracerProviderBuilder() //Start building OpenTelemetry pipeline
+    .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService(serviceName, serviceVersion: "1.0.0")) //Adds metadata about the service
+    .AddSource(serviceName)  //Registers for custom spans
     .AddJaegerExporter(o => o.Protocol = OpenTelemetry.Exporter.JaegerExportProtocol.HttpBinaryThrift)
-    .AddAspNetCoreInstrumentation()
-    .AddHttpClientInstrumentation()
+    .AddAspNetCoreInstrumentation() //Auto - captures incoming requests
+    .AddHttpClientInstrumentation() //Auto-captures outgoing HTTP calls
     .Build();
 
 //docker run -d --name jaeger \
@@ -37,6 +33,7 @@ using TracerProvider? tracerProvider = Sdk.CreateTracerProviderBuilder()
 //  -p 14250:14250 \
 //  -p 9411:9411 \
 //  jaegertracing / all -in-one:1.22
+
 builder.Services.AddSingleton<IConnectionFactory>(factory =>
 {
     var connectionFactory = new ConnectionFactory()

@@ -1,53 +1,59 @@
-version: "3.3"
+version: "3.3"  # Specifies the Docker Compose file format version
 
 services:
   productservice:
-    image: productservice:v2
+    image: productservice:v2  # Uses the productservice image with tag v2
     networks:
-        - nagpnetwork
+      - nagpnetwork           # Connects to custom bridge network for inter-service communication
     ports:
-      - "5003:80"
-      
+      - "5003:80"             # Maps container port 80 to host port 5003
+
   cartservice:
-    image: cartservice:v2
+    image: cartservice:v2     # Uses the cartservice image with tag v2
     networks:
-        - nagpnetwork
+      - nagpnetwork           # Connects to the shared bridge network
     ports:
-      - "5001:80" 
+      - "5001:80"             # Maps container port 80 to host port 5001
 
   orderservice:
-    image: orderservice:v3
+    image: orderservice:v3    # Uses the orderservice image with tag v3
     networks:
-        - nagpnetwork
+      - nagpnetwork           # Part of the same network for inter-service messaging
     environment:
-      - RabbitMQ__HostName=rabbitmq
-      - RabbitMQ__Port=5672
-      - RabbitMQ__UserName=guest
-      - RabbitMQ__Password=guest
-      - RabbitMQ__VirtualHost=/
+      - RabbitMQ__HostName=rabbitmq    # Environment variable: hostname of RabbitMQ service
+      - RabbitMQ__Port=5672            # Environment variable: RabbitMQ messaging port
+      - RabbitMQ__UserName=guest       # Environment variable: RabbitMQ username
+      - RabbitMQ__Password=guest       # Environment variable: RabbitMQ password
+      - RabbitMQ__VirtualHost=/        # Environment variable: RabbitMQ virtual host
     ports:
-      - "5005:80"
+      - "5005:80"             # Maps container port 80 to host port 5005
     depends_on:
-      - rabbitmq  
-      
+      - rabbitmq              # Ensures RabbitMQ service starts before orderservice
+
   rabbitmq:
-    image: rabbitmq:latest
+    image: rabbitmq:latest    # Uses the latest official RabbitMQ image
     ports:
-      - "5672:5672"  
-      - "15672:15672"  
+      - "5672:5672"           # RabbitMQ messaging port
+      - "15672:15672"         # RabbitMQ management console (web UI) port
     networks:
-      - nagpnetwork
+      - nagpnetwork           # Joins the same custom network
     environment:
-      - RABBITMQ_DEFAULT_USER=guest  # Set default user
-      - RABBITMQ_DEFAULT_PASS=guest  # Set default password      
+      - RABBITMQ_DEFAULT_USER=guest  # Default RabbitMQ username
+      - RABBITMQ_DEFAULT_PASS=guest  # Default RabbitMQ password
 
-
+  eurekaserver:
+    image: steeltoeoss/eureka-server:latest  # Uses the Eureka Server image from Steeltoe
+    expose:
+      - "8761"              # Makes port 8761 accessible to other services (not to host)
+    networks:
+      - nagpnetwork         # Same network to allow service discovery by others
+    ports:
+      - "8761:8761"         # Maps container port 8761 to host port for UI access
+    container_name: eureka  # Assigns a fixed name to the container for easier reference
 
 networks:
   nagpnetwork:
-    driver: bridge
+    driver: bridge           # Defines a user-defined bridge network for internal service communication
 
 # Additional configuration for environment variables, logging, etc. can be added here.
-#docker run -d -p 8761:8761 steeltoeoss/eureka-server
-
-
+# docker run -d -p 8761:8761 steeltoeoss/eureka-server  # Manual command example to run Eureka server without Compose

@@ -4,6 +4,7 @@ using System.Text;
 using RabbitMQ.Client;
 using OrderService.Interface;
 using System.Net.Http;
+using OrderService.Model;
 
 namespace OrderService.Controllers
 {
@@ -41,12 +42,22 @@ namespace OrderService.Controllers
         }
 
         [HttpGet("{cartID}")]
-        public async Task<ActionResult> GetAsync([FromRoute]int cartID)
+        public async Task<ActionResult> GetAsync([FromRoute] int cartID)
         {
-            _log.LogInformation($"OrderService cart id: {cartID} ");
-            using var httpClient = new HttpClient();
+            _log.LogInformation($"OrderService received cart id: {cartID}");
 
-            HttpResponseMessage response = await httpClient.GetAsync("https://localhost:7095/api/product/3");
+            // Simulate a dummy cart lookup (you would normally fetch from DB or service)
+            CartModel dummyCart = GetDummyCartById(cartID);
+            if (dummyCart == null)
+            {
+                return NotFound($"Cart with ID {cartID} not found.");
+            }
+
+            int productId = dummyCart.ProductId;
+
+            using var httpClient = new HttpClient();
+            string productUrl = $"https://localhost:7095/api/product/{productId}";
+            HttpResponseMessage response = await httpClient.GetAsync(productUrl);
 
             if (response.IsSuccessStatusCode)
             {
@@ -57,10 +68,24 @@ namespace OrderService.Controllers
             {
                 Console.WriteLine($"HTTP status code: {response.StatusCode}");
             }
+
             return Ok();
-
-
         }
+
+        // Dummy method for simulating cart data
+        private CartModel GetDummyCartById(int cartId)
+        {
+            // In a real scenario, you'd look up the DB or a cache
+            var dummyCarts = new List<CartModel>
+    {
+        new CartModel { CartId = 1, ProductId = 1 },
+        new CartModel { CartId = 2, ProductId = 2 },
+        new CartModel { CartId = 3, ProductId = 3 }
+    };
+
+            return dummyCarts.FirstOrDefault(c => c.CartId == cartId);
+        }
+
 
 
     }

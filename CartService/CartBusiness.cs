@@ -12,21 +12,46 @@ namespace CartService
         private static readonly Random _jitter = new Random();
 
         private static readonly AsyncRetryPolicy<HttpResponseMessage> transientErrorRetryPolicy =
-            Policy.HandleResult<HttpResponseMessage>(message => (int)message.StatusCode == 429 || (int)message.StatusCode >= 500)
-            .WaitAndRetryAsync(2, retryAttempt =>
-            {
-                Console.WriteLine($"Retrying because of transient error . Attempt {retryAttempt}");
-                return TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)) + TimeSpan.FromMilliseconds(_jitter.Next(0, 1000));
-                // firstattempt after 2.000-2.999 2nd attempt after 4.0-4.999
-            });
+            Policy.HandleResult<HttpResponseMessage>(message =>
+                (int)message.StatusCode == 429 || (int)message.StatusCode >= 500)
+                    .WaitAndRetryAsync(
+                        retryCount: 2,
+                        sleepDurationProvider: retryAttempt =>
+                        {
+                            // Exponential backoff: 2^retryAttempt seconds + random jitter (0–999 ms)
+                            var backoff = TimeSpan.FromSeconds(Math.Pow(2, retryAttempt));
+                            var jitter = TimeSpan.FromMilliseconds(_jitter.Next(0, 1000));
+                            var totalDelay = backoff + jitter;
 
+                            Console.WriteLine($"[Retry #{retryAttempt}] Waiting {totalDelay.TotalSeconds:F2} seconds before retry due to transient error.");
+                            return totalDelay;
+                        });
+
+
+        // Circuit Breaker: break after 2 consecutive 500 errors, for 30 seconds
         private static readonly AsyncCircuitBreakerPolicy<HttpResponseMessage> circuitBreakerPolicy =
-            Policy.HandleResult<HttpResponseMessage>(message => (int)message.StatusCode == 500)
-            .CircuitBreakerAsync(2, TimeSpan.FromSeconds(30));
+            Policy.HandleResult<HttpResponseMessage>(r => (int)r.StatusCode == 500)
+                    .CircuitBreakerAsync(
+                        handledEventsAllowedBeforeBreaking: 2,
+                        durationOfBreak: TimeSpan.FromSeconds(30),
+                        onBreak: (result, breakDelay) =>
+                        {
+                            Console.WriteLine($"Circuit broken due to {result.Result?.StatusCode}. Breaking for {breakDelay.TotalSeconds} seconds.");
+                        },
+                        onReset: () => Console.WriteLine("Circuit closed again. Back to normal."),
+                        onHalfOpen: () => Console.WriteLine("Circuit in half-open state. Trying a test call.")
+                    );
+
 
         private static readonly AsyncCircuitBreakerPolicy<HttpResponseMessage> advancedCircuitBreakerPolicy =
             Policy.HandleResult<HttpResponseMessage>(message => (int)message.StatusCode == 500)
-            .AdvancedCircuitBreakerAsync(0.5,TimeSpan.FromMinutes(1),10,TimeSpan.FromMinutes(1));
+                    .AdvancedCircuitBreakerAsync(
+                        failureThreshold: 0.5, // 50% failure rate
+                        samplingDuration: TimeSpan.FromSeconds(60), // Sample over 1 minute
+                        minimumThroughput: 10, // At least 10 calls in the window to trigger evaluation
+                        durationOfBreak: TimeSpan.FromSeconds(30) // How long to break
+                    );
+
 
         private static readonly AsyncPolicyWrap<HttpResponseMessage> resilientPolicy = circuitBreakerPolicy.WrapAsync(transientErrorRetryPolicy);
 
@@ -42,11 +67,11 @@ namespace CartService
             }
 
             var httpClient = _httpClientFactory.CreateClient("ProductClient");
-            
+
             //HttpResponseMessage response = await transientErrorRetryPolicy.ExecuteAsync(() => httpClient.GetAsync($"{id}"));
-            
+
             HttpResponseMessage response = await circuitBreakerPolicy.ExecuteAsync(() => transientErrorRetryPolicy.ExecuteAsync(() => httpClient.GetAsync($"{id}")));
-            
+
             //HttpResponseMessage response = await resilientPolicy.ExecuteAsync(() => httpClient.GetAsync($"{id}"));
 
             // Check if the response is successful (HTTP status code in the 200-299 range)
@@ -64,8 +89,8 @@ namespace CartService
                 // If the response is not successful, output the HTTP status code
                 throw new Exception("Service is unavailable");
             }
-            
-            
+
+
         }
     }
 }

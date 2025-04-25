@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace ProductService.Controllers
 {
@@ -18,14 +19,10 @@ namespace ProductService.Controllers
             _log = log;
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns></returns>
         [HttpGet]
-        //[Authorize(Roles = "Deliver")]
         public ActionResult<IEnumerable<string>> Get()
         {
+            Thread.Sleep(2000);
             _log.LogInformation("showProducts has been viewed.");
             if (_products.Count() > 0)
             {
@@ -41,17 +38,32 @@ namespace ProductService.Controllers
         [HttpGet("{id}")]
         public ActionResult ProductById(int id)
         {
-            var productbyid = _products.FirstOrDefault(c => c.ProductId == id);
-            if (productbyid == null)
+            var productById = _products.FirstOrDefault(c => c.ProductId == id);
+
+            // Start a tracing activity for observability
+            using (var activity = new ActivitySource("ProductService").StartActivity("GetProductById", ActivityKind.Server))
             {
-                throw new Exception("Service is unavailable");
-            }
-            else
-            {
-                return Ok(productbyid);
+                if (activity != null)
+                {
+                    activity.SetTag("product.id", id);                         // ID of the product being searched
+                    activity.SetTag("product.found", productById != null);     // Whether the product was found
+                    activity.SetTag("http.route", $"GET /api/product/{id}");   // Trace route
+                    activity.SetTag("service.name", "ProductService");         // Service name
+                }
+
+                Console.WriteLine("Searching for product...");
+                Thread.Sleep(500); // Simulated delay to mimic processing
+                Console.WriteLine("Product search complete.");
             }
 
+            if (productById == null)
+            {
+                throw new Exception("Service is unavailable"); // Simulate a failure case for tracing
+            }
+
+            return Ok(productById);
         }
+
 
         [HttpPost]
         public ActionResult Post([FromBody] Product product)
